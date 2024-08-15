@@ -26,7 +26,7 @@ export class SelectReplace extends Base {
     /**
      *
      * @param {object} options
-     * @param {HTMLSelectElement} [options.el=document.querySelector('select')]
+     * @param {HTMLSelectElement} [options.el]
      */
     constructor(options = {}) {
         super({
@@ -147,7 +147,7 @@ export class SelectReplace extends Base {
             return;
         }
 
-        const clickedOptionIndex = [].slice.call(this.#optionListProvider.optionList.children).indexOf(clickedOption)
+        const clickedOptionIndex = [].slice.call(this.#optionListProvider.optionList.children).indexOf(clickedOption);
         const realOption = this.options.el.querySelector(`option:nth-child(${clickedOptionIndex + 1})`);
 
         if (this.options.el.multiple === false) {
