@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adventure Multiselect Replace mit Optionsliste in einem Custom Container angehängt</title>
+    <link rel="stylesheet" href="build/demo.css">
+</head>
+<body>
+<div id="custom-container">
+    <label for="select-replace">Multiple Select</label>
+    <select id="select-replace" multiple data-placeholder="Bitte wählen …">
+        <option value="option-1">Option 1</option>
+        <option value="option-2">Option 2</option>
+        <option value="option-3">Option 3</option>
+        <option value="option-4">Option 4</option>
+        <option value="option-5">Option 5</option>
+    </select>
+</div>
+<script type="module">
+    import { SelectReplace } from './build/demo.js';
+
+    const selectReplace = new SelectReplace({
+        optionList: {
+            appendTo: document.getElementById('custom-container')
+        }
+    });
+
+    selectReplace.init();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+@use "sass:map";
+
+/// Private Variable, die die Select Replace Standard-Konfiguration beinhaltet.
+/// Zum Ändern der Konfiguration kann das **configure** Mixin verwendet werden.
+/// @access public
+/// @type Map
+
+$_config: (
+    "fake-select": (
+        "padding-inline-end": 40px,
+        "icon": (
+            "color": #cccccc,
+            "size": 9px
+        )
+    )
+);
+
+/// Ermöglicht das Konfigurieren der Select Replace Komponente.
+/// @param {Map} $config
+@mixin configure($config) {
+    $_config: map.deep-merge($_config, $config) !global;
+}
+
+/// Ermöglicht Zugriff auf Werte aus der internen Konfiguration.
+/// @param {String} $key
+@function get($key...) {
+    @return map.get($_config, $key...);
+}
