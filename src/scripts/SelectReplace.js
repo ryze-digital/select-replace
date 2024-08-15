@@ -1,6 +1,7 @@
 import { Base } from '@ryze-digital/js-utilities';
 import { OptionListProvider } from './OptionListProvider.js';
 import { PlaceholderProvider } from './PlaceholderProvider.js';
+import { KeyboardController } from './KeyboardController.js';
 
 export class SelectReplace extends Base {
     /**
@@ -9,14 +10,19 @@ export class SelectReplace extends Base {
     #fakeSelect = null;
 
     /**
-     * @type {object}
+     * @type {OptionListProvider}
      */
     #optionListProvider;
 
     /**
-     * @type {object}
+     * @type {PlaceholderProvider}
      */
     #placeholderProvider;
+
+    /**
+     * @type {KeyboardController}
+     */
+    #keyboardController;
 
     /**
      * @type {object}
@@ -26,7 +32,7 @@ export class SelectReplace extends Base {
     /**
      *
      * @param {object} options
-     * @param {HTMLSelectElement} [options.el]
+     * @param {HTMLSelectElement} [options.el=document.querySelector('select')]
      */
     constructor(options = {}) {
         super({
@@ -38,7 +44,9 @@ export class SelectReplace extends Base {
             classes: {
                 fakeSelect: 'select-replace',
                 placeholder: 'placeholder',
-                optionList: 'option-list'
+                optionList: 'option-list',
+                hideSelect: 'visually-hidden',
+                focussed: 'has-focus'
             },
             i18n: {
                 languages: ['en', 'de'],
@@ -50,7 +58,7 @@ export class SelectReplace extends Base {
             }
         }, options);
 
-        if (this.options.el.multiple === true && typeof this.options.el.dataset.placeholder === 'undefined') {
+        if (this.isMultiple && typeof this.options.el.dataset.placeholder === 'undefined') {
             console.error(`Select with id="${this.options.el.id}" is missing data-placeholder`);
         }
 
@@ -60,10 +68,13 @@ export class SelectReplace extends Base {
     init() {
         this.#replaceSelect();
 
+        this.#observer = new MutationObserver(this.#handleDomChanges);
+
         this.#optionListProvider = new OptionListProvider(
             this.options,
             this.#fakeSelect,
-            this.#handleOptionListClick
+            this.#handleOptionListClick,
+            this.#observer
         );
 
         this.#placeholderProvider = new PlaceholderProvider(
@@ -74,7 +85,12 @@ export class SelectReplace extends Base {
 
         this.#placeholderProvider.createPlaceholder();
 
-        this.#observer = new MutationObserver(this.#handleDomChanges);
+        this.#keyboardController = new KeyboardController(
+            this.options,
+            this.#fakeSelect,
+            this.#optionListProvider,
+            this.#handleRealSelectChange
+        );
     }
 
     update() {
@@ -82,7 +98,7 @@ export class SelectReplace extends Base {
             this.#optionListProvider.syncOptions();
         }
 
-        if (this.options.el.multiple === true) {
+        if (this.isMultiple) {
             this.#placeholderProvider.refreshSelectedCount(this.selectedCount);
         } else {
             this.#placeholderProvider.placeholder = this.options.el.querySelector('option:checked').textContent;
@@ -97,6 +113,14 @@ export class SelectReplace extends Base {
         return this.options.el.querySelectorAll('option:checked').length;
     }
 
+    /**
+     *
+     * @returns {boolean}
+     */
+    get isMultiple() {
+        return this.options.el.multiple;
+    }
+
     #setLanguageToUse() {
         if (this.options.i18n.languages.includes(document.documentElement.lang)) {
             this.options.i18n.use = document.documentElement.lang;
@@ -109,7 +133,7 @@ export class SelectReplace extends Base {
         this.#fakeSelect.addEventListener('click', this.#handleFakeSelectClick);
 
         this.options.el.after(this.#fakeSelect);
-        this.options.el.style.display = 'none';
+        this.options.el.classList.add(this.options.classes.hideSelect);
     }
 
     /**
@@ -118,16 +142,6 @@ export class SelectReplace extends Base {
      */
     #handleFakeSelectClick = (event) => {
         event.stopPropagation();
-
-        if (this.#optionListProvider.optionListCreated === false) {
-            this.#optionListProvider.createOptionList();
-            this.#optionListProvider.syncOptions();
-            this.#observer.observe(this.options.el, {
-                attributes: true,
-                childList: true,
-                subtree: true
-            });
-        }
 
         if (this.#optionListProvider.visible === true) {
             this.#optionListProvider.hide();
@@ -147,10 +161,10 @@ export class SelectReplace extends Base {
             return;
         }
 
-        const clickedOptionIndex = [].slice.call(this.#optionListProvider.optionList.children).indexOf(clickedOption);
+        const clickedOptionIndex = [].slice.call(this.#optionListProvider.optionList.children).indexOf(clickedOption)
         const realOption = this.options.el.querySelector(`option:nth-child(${clickedOptionIndex + 1})`);
 
-        if (this.options.el.multiple === false) {
+        if (this.isMultiple === false) {
             this.#setUnselected();
             this.#setSelected(realOption, clickedOption);
             this.#optionListProvider.hide();
@@ -163,10 +177,31 @@ export class SelectReplace extends Base {
         this.options.el.dispatchEvent(new Event('change'));
     };
 
-    #setUnselected() {
-        const realOption = this.options.el.querySelector('option:checked');
-        const fakeOption = this.#optionListProvider.optionList.querySelector('[aria-selected="true"]');
+    #handleRealSelectChange = () => {
+        const realOptions = this.options.el.querySelectorAll('option:checked');
+        const fakeOptions = this.#optionListProvider.optionList.querySelectorAll('[aria-selected="true"]');
 
+        fakeOptions.forEach((fakeOption) => {
+            this.#setUnselected(null, fakeOption);
+        });
+
+        realOptions.forEach((realOption) => {
+            const fakeOption = this.#optionListProvider.optionList.querySelector(`[data-value="${realOption.value}"]`);
+
+            this.#setSelected(null, fakeOption);
+        });
+
+        if (this.isMultiple) {
+            this.#placeholderProvider.refreshSelectedCount(realOptions.length);
+        } else {
+            this.#placeholderProvider.placeholder = realOptions[0].textContent;
+        }
+    };
+
+    #setUnselected(
+        realOption = this.options.el.querySelector('option:checked'),
+        fakeOption = this.#optionListProvider.optionList.querySelector('[aria-selected="true"]')
+    ) {
         if (realOption !== null) {
             realOption.selected = false;
         }
@@ -182,8 +217,13 @@ export class SelectReplace extends Base {
      * @param {HTMLDivElement} fakeOption
      */
     #setSelected(realOption, fakeOption) {
-        realOption.selected = true;
-        fakeOption.ariaSelected = 'true';
+        if (realOption !== null) {
+            realOption.selected = true;
+        }
+
+        if (fakeOption !== null) {
+            fakeOption.ariaSelected = 'true';
+        }
     }
 
     /**
@@ -192,14 +232,19 @@ export class SelectReplace extends Base {
      * @param {HTMLDivElement} fakeOption
      */
     #toggleSelected(realOption, fakeOption) {
-        realOption.selected = !realOption.selected;
-        fakeOption.ariaSelected = fakeOption.ariaSelected === 'true' ? 'false' : 'true';
+        if (realOption !== null) {
+            realOption.selected = !realOption.selected;
+        }
+
+        if (fakeOption !== null) {
+            fakeOption.ariaSelected = fakeOption.ariaSelected === 'true' ? 'false' : 'true';
+        }
     }
 
     #handleDomChanges = () => {
         this.#optionListProvider.syncOptions();
 
-        if (this.options.el.multiple === true) {
+        if (this.isMultiple) {
             this.#placeholderProvider.refreshSelectedCount(this.selectedCount);
         }
     };

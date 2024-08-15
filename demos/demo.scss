@@ -56,8 +56,22 @@ label {
     }
 }
 
+select {
+    &.visually-hidden {
+        @include scss-utilities.visually-hidden();
+    }
+}
+
 .select-replace {
     @include select-replace.fake-select();
+    &.has-focus {
+        outline: {
+            width: 2px;
+            style: solid;
+            color: lightcoral;
+            offset: 2px;
+        }
+    }
 }
 
 .option-list {
@@ -133,6 +147,16 @@ label {
         padding: {
             block: 0.5rem;
             inline: 1.5rem;
+        }
+    }
+}
+
+.form-grid {
+    display: grid;
+    gap: 1rem;
+    grid: {
+        template: {
+            columns: repeat(auto-fit, minmax(8rem, 1fr));
         }
     }
 }

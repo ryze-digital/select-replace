@@ -25,15 +25,22 @@ export class OptionListProvider {
     #clickCallback;
 
     /**
+     * @type {object}
+     */
+    #observer;
+
+    /**
      *
      * @param {object} options
      * @param {HTMLDivElement} fakeSelect
      * @param {Function} clickCallback
+     * @param {object} observer
      */
-    constructor(options, fakeSelect, clickCallback) {
+    constructor(options, fakeSelect, clickCallback, observer) {
         this.options = options;
         this.#fakeSelect = fakeSelect;
         this.#clickCallback = clickCallback;
+        this.#observer = observer;
     }
 
     /**
@@ -101,6 +108,16 @@ export class OptionListProvider {
     }
 
     show() {
+        if (this.optionListCreated === false) {
+            this.createOptionList();
+            this.syncOptions();
+            this.#observer.observe(this.options.el, {
+                attributes: true,
+                childList: true,
+                subtree: true
+            });
+        }
+
         const { top, left, width } = this.#getPositions();
 
         Object.assign(this.#optionList.style, {
