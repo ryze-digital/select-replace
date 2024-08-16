@@ -5,7 +5,7 @@
 /// @access public
 /// @type Map
 
-$_config: (
+$-config: (
     "fake-select": (
         "padding-inline-end": 40px,
         "icon": (
@@ -18,11 +18,11 @@ $_config: (
 /// Ermöglicht das Konfigurieren der Select Replace Komponente.
 /// @param {Map} $config
 @mixin configure($config) {
-    $_config: map.deep-merge($_config, $config) !global;
+    $-config: map.deep-merge($-config, $config) !global;
 }
 
 /// Ermöglicht Zugriff auf Werte aus der internen Konfiguration.
 /// @param {String} $key
 @function get($key...) {
-    @return map.get($_config, $key...);
+    @return map.get($-config, $key...);
 }

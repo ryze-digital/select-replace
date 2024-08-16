@@ -5,11 +5,6 @@ export class PlaceholderProvider {
     #fakeSelect;
 
     /**
-     * @type {Function}
-     */
-    #clickCallback;
-
-    /**
      * @type {number}
      */
     #initialSelectedCount;

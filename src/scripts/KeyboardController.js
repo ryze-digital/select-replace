@@ -5,7 +5,7 @@ export class KeyboardController {
     #fakeSelect;
 
     /**
-     * @type {OptionListProvider}
+     * @type {object}
      */
     #optionListProvider;
 
@@ -13,8 +13,8 @@ export class KeyboardController {
      *
      * @param {object} options
      * @param {HTMLDivElement} fakeSelect
-     * @param {OptionListProvider} optionListProvider
-     * @param {function} handleRealSelectChange
+     * @param {object} optionListProvider
+     * @param {Function} handleRealSelectChange
      */
     constructor(options, fakeSelect, optionListProvider, handleRealSelectChange) {
         this.options = options;
@@ -25,17 +25,18 @@ export class KeyboardController {
         this.options.el.addEventListener('focusout', this.#removeMirroredFocusState);
         this.options.el.addEventListener('change', handleRealSelectChange);
     }
+
     #mirrorFocusState = () => {
         this.#fakeSelect.classList.add(this.options.classes.focussed);
         this.#optionListProvider.show();
         this.options.el.addEventListener('keydown', this.#handleKeydownEvents);
-    }
+    };
 
     #removeMirroredFocusState = () => {
         this.#fakeSelect.classList.remove(this.options.classes.focussed);
         this.#optionListProvider.hide();
         this.options.el.removeEventListener('keydown', this.#handleKeydownEvents);
-    }
+    };
 
     /**
      *
@@ -51,5 +52,5 @@ export class KeyboardController {
                 this.#removeMirroredFocusState();
                 break;
         }
-    }
+    };
 }

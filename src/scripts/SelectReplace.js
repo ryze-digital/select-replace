@@ -20,11 +20,6 @@ export class SelectReplace extends Base {
     #placeholderProvider;
 
     /**
-     * @type {KeyboardController}
-     */
-    #keyboardController;
-
-    /**
      * @type {object}
      */
     #observer;
@@ -32,7 +27,7 @@ export class SelectReplace extends Base {
     /**
      *
      * @param {object} options
-     * @param {HTMLSelectElement} [options.el=document.querySelector('select')]
+     * @param {HTMLSelectElement} [options.el]
      */
     constructor(options = {}) {
         super({
@@ -85,7 +80,7 @@ export class SelectReplace extends Base {
 
         this.#placeholderProvider.createPlaceholder();
 
-        this.#keyboardController = new KeyboardController(
+        new KeyboardController(
             this.options,
             this.#fakeSelect,
             this.#optionListProvider,
@@ -161,7 +156,7 @@ export class SelectReplace extends Base {
             return;
         }
 
-        const clickedOptionIndex = [].slice.call(this.#optionListProvider.optionList.children).indexOf(clickedOption)
+        const clickedOptionIndex = [].slice.call(this.#optionListProvider.optionList.children).indexOf(clickedOption);
         const realOption = this.options.el.querySelector(`option:nth-child(${clickedOptionIndex + 1})`);
 
         if (this.isMultiple === false) {
@@ -198,6 +193,11 @@ export class SelectReplace extends Base {
         }
     };
 
+    /**
+     *
+     * @param {HTMLOptionElement} realOption
+     * @param {HTMLDivElement} fakeOption
+     */
     #setUnselected(
         realOption = this.options.el.querySelector('option:checked'),
         fakeOption = this.#optionListProvider.optionList.querySelector('[aria-selected="true"]')
