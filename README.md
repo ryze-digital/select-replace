@@ -16,12 +16,26 @@ npm i @ryze-digital/select-replace
 @use "@ryze-digital/select-replace";
 ```
 
-Use the provided `configure` mixin to define your select replace defaults. A complete list of all possible configurations can
-be found in [/src/styles/_config.scss](src/styles/_config.scss).
+Use the provided `configure` mixin to define your select replace defaults.
 
 ```scss
 @include select-replace.configure(...);
 ```
+
+<details>
+<summary>List of available configure options</summary>
+
+| Option                         | Type   | Default   | Description                                                            |
+|--------------------------------|--------|-----------|------------------------------------------------------------------------|
+| fake-select                    | Map    |           | Configuration options especially for the fake select (not option list) |
+| fake-select.padding-inline-end | Number | `40px`    | Area where in which the arrow down icon is centered in                 |
+| fake-select.icon               | Map    |           | The arrow down icon (aka select box indicator)                         |
+| fake-select.icon.color         | Color  | `#cccccc` |                                                                        |
+| fake-select.icon.size          | Number | `9px`     |                                                                        |
+
+
+Check out [the actual configure mixin](src/styles/_config.scss) for better understanding.
+</details>
 
 There are seperate mixins for the replaced select and the option list.
 
@@ -64,6 +78,23 @@ import { SelectReplace } from '@ryze-digital/select-replace';
 ```js
 new SelectReplace({...}).init();
 ```
+
+<details>
+<summary>List of available parameters for SelectReplace class</summary>
+
+| Option               | Type        | Default                                                                                                                                                                                                                                | Description                                                                         |
+|----------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| el                   | HTMLElement | `document.querySelector('selector')`                                                                                                                                                                                                   | Container to which the library should be bound                                      |
+| optionList           | object      |                                                                                                                                                                                                                                        | Configuration options especially for the option list                                |
+| optionList.calcWidth | boolean     | `true`                                                                                                                                                                                                                                 | Make option list the same width as select field                                     |
+| optionList.appendTo  | HTMLElement | `document.body`                                                                                                                                                                                                                        | Container in which the option list get appended                                     |
+| classes              | object      | <pre>{<br>&nbsp;&nbsp;fakeSelect: 'select-replace',<br>&nbsp;&nbsp;placeholder: 'placeholder',<br>&nbsp;&nbsp;optionList: 'option-list',<br>&nbsp;&nbsp;hideSelect: 'visually-hidden',<br>&nbsp;&nbsp;focussed: 'has-focus'<br>}</pre> | Selectors that are used internally or states that will be added to elements         |
+| i18n                 | object      |                                                                                                                                                                                                                                        | Internationalization settings                                                       |
+| i18n.languages       | array       | `['en', 'de']`                                                                                                                                                                                                                         | Available translations (extend this array, if you provide more)                     |
+| i18n.selectedOptions | object      | <pre>{<br>&nbsp;&nbsp;en: 'selected',<br>&nbsp;&nbsp;de: 'ausgewählt'<br>}</pre>                                                                                                                                                       | Translations for n selected                                                         |
+| i18n.use             | string      | `en`                                                                                                                                                                                                                                   | Fallback language to use, if document language is not available in `i18n.languages` |
+
+</details>
 
 ## Demos
 
