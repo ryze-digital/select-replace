@@ -39,6 +39,9 @@ export class SelectReplace extends Base {
                 fakeSelect: 'select-replace',
                 placeholder: 'placeholder',
                 optionList: 'option-list',
+                optgroup: 'option-list-group',
+                searchInput: 'option-list-search',
+                noResults: 'option-list-empty',
                 hideSelect: 'visually-hidden',
                 focussed: 'has-focus',
                 disabled: 'disabled'
@@ -49,8 +52,19 @@ export class SelectReplace extends Base {
                     en: 'selected',
                     de: 'ausgewählt'
                 },
+                search: {
+                    placeholder: {
+                        en: 'Search options',
+                        de: 'Optionen suchen'
+                    },
+                    noResults: {
+                        en: 'No results found',
+                        de: 'Keine Ergebnisse gefunden'
+                    }
+                },
                 use: 'en'
-            }
+            },
+            search: false
         }, options);
 
         if (this.isMultiple && typeof this.options.el.dataset.placeholder === 'undefined') {
@@ -77,7 +91,7 @@ export class SelectReplace extends Base {
             return;
         }
 
-        this.#observer = new MutationObserver(this.#handleDomChanges);
+        this.#observer = new MutationObserver(this.update);
 
         this.#optionListProvider = new OptionListProvider(
             this.options,
@@ -95,11 +109,7 @@ export class SelectReplace extends Base {
     }
 
     update = () => {
-        if (this.isDisabled) {
-            this.#fakeSelect.classList.add(this.options.classes.disabled);
-        } else {
-            this.#fakeSelect.classList.remove(this.options.classes.disabled);
-        }
+        this.#fakeSelect.classList.toggle(this.options.classes.disabled, this.isDisabled);
 
         if (this.#optionListProvider.optionListCreated === true && this.isDisabled === false) {
             this.#optionListProvider.syncOptions();
@@ -108,7 +118,7 @@ export class SelectReplace extends Base {
         if (this.isMultiple) {
             this.#placeholderProvider.refreshSelectedCount(this.selectedCount);
         } else {
-            this.#placeholderProvider.placeholder = this.options.el.querySelector('option:checked').textContent;
+            this.#placeholderProvider.placeholder = this.options.el.querySelector('option:checked')?.textContent ?? '';
         }
     };
 
@@ -160,20 +170,26 @@ export class SelectReplace extends Base {
         this.options.el.classList.add(this.options.classes.hideSelect);
     }
 
-    #handleFakeSelectClick = () => {
+    /**
+     * @param {MouseEvent} event
+     */
+    #handleFakeSelectClick = (event) => {
         if (this.isDisabled) {
             return;
         }
 
+        event.preventDefault();
+
         if (this.#optionListProvider.visible === true) {
+            this.#optionListProvider.resetFilter();
             this.#optionListProvider.hide();
         } else {
-            this.#optionListProvider.show();
+            this.options.el.focus();
+            this.#optionListProvider.show(true);
         }
     };
 
     /**
-     *
      * @param {object} event
      */
     #handleOptionListClick = (event) => {
@@ -183,34 +199,52 @@ export class SelectReplace extends Base {
             return;
         }
 
-        const clickedOptionIndex = [].slice.call(this.#optionListProvider.optionList.children).indexOf(clickedOption);
-        const realOption = this.options.el.querySelector(`option:nth-child(${clickedOptionIndex + 1})`);
+        const realOption = this.#optionListProvider.resolveRealOption(clickedOption);
+
+        if (realOption === null) {
+            return;
+        }
 
         if (this.isMultiple === false) {
-            this.#setUnselected();
-            this.#setSelected(realOption, clickedOption);
+            this.#setSelectionState(
+                this.options.el.querySelector('option:checked'),
+                this.#optionListProvider.optionList.querySelector('[aria-selected="true"]'),
+                false
+            );
+            this.#setSelectionState(realOption, clickedOption, true);
+            this.#optionListProvider.resetFilter();
             this.#optionListProvider.hide();
-            this.#placeholderProvider.placeholder = event.target.textContent;
+            this.#placeholderProvider.placeholder = clickedOption.textContent;
         } else {
-            this.#toggleSelected(realOption, clickedOption);
+            this.#setSelectionState(realOption, clickedOption, !realOption.selected);
             this.#placeholderProvider.refreshSelectedCount(this.selectedCount);
         }
 
-        this.options.el.dispatchEvent(new Event('change'));
+        this.options.el.dispatchEvent(new Event('change', { bubbles: true }));
     };
 
     #handleRealSelectChange = () => {
+        if (this.#optionListProvider.optionListCreated === false) {
+            this.update();
+
+            return;
+        }
+
         const realOptions = this.options.el.querySelectorAll('option:checked');
         const fakeOptions = this.#optionListProvider.optionList.querySelectorAll('[aria-selected="true"]');
 
         fakeOptions.forEach((fakeOption) => {
-            this.#setUnselected(null, fakeOption);
+            this.#setSelectionState(null, fakeOption, false);
         });
 
-        realOptions.forEach((realOption) => {
-            const fakeOption = this.#optionListProvider.optionList.querySelector(`[data-value="${realOption.value}"]`);
+        this.options.el.querySelectorAll('option').forEach((realOption, optionIndex) => {
+            if (realOption.selected === false) {
+                return;
+            }
 
-            this.#setSelected(null, fakeOption);
+            const fakeOption = this.#optionListProvider.optionList.querySelector(`[data-index="${optionIndex}"]`);
+
+            this.#setSelectionState(null, fakeOption, true);
         });
 
         if (this.isMultiple) {
@@ -221,60 +255,19 @@ export class SelectReplace extends Base {
     };
 
     /**
-     *
-     * @param {HTMLOptionElement} realOption
-     * @param {HTMLDivElement} fakeOption
+     * @param {HTMLOptionElement|null} realOption
+     * @param {HTMLDivElement|null} fakeOption
+     * @param {boolean} selected
      */
-    #setUnselected(
-        realOption = this.options.el.querySelector('option:checked'),
-        fakeOption = this.#optionListProvider.optionList.querySelector('[aria-selected="true"]')
-    ) {
+    #setSelectionState(realOption, fakeOption, selected) {
         if (realOption !== null) {
-            realOption.selected = false;
+            realOption.selected = selected;
         }
 
         if (fakeOption !== null) {
-            fakeOption.ariaSelected = 'false';
+            fakeOption.setAttribute('aria-selected', selected ? 'true' : 'false');
         }
     }
-
-    /**
-     *
-     * @param {HTMLOptionElement} realOption
-     * @param {HTMLDivElement} fakeOption
-     */
-    #setSelected(realOption, fakeOption) {
-        if (realOption !== null) {
-            realOption.selected = true;
-        }
-
-        if (fakeOption !== null) {
-            fakeOption.ariaSelected = 'true';
-        }
-    }
-
-    /**
-     *
-     * @param {HTMLOptionElement} realOption
-     * @param {HTMLDivElement} fakeOption
-     */
-    #toggleSelected(realOption, fakeOption) {
-        if (realOption !== null) {
-            realOption.selected = !realOption.selected;
-        }
-
-        if (fakeOption !== null) {
-            fakeOption.ariaSelected = fakeOption.ariaSelected === 'true' ? 'false' : 'true';
-        }
-    }
-
-    #handleDomChanges = () => {
-        this.#optionListProvider.syncOptions();
-
-        if (this.isMultiple) {
-            this.#placeholderProvider.refreshSelectedCount(this.selectedCount);
-        }
-    };
 
     bindFormReset() {
         const form = this.options.el.closest('form');

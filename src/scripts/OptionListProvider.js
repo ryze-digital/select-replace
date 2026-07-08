@@ -1,4 +1,5 @@
 import { ReduceFunctionCalls } from '@ryze-digital/js-utilities';
+import { SearchProvider } from './SearchProvider.js';
 
 export class OptionListProvider {
     /**
@@ -10,6 +11,16 @@ export class OptionListProvider {
      * @type {HTMLDivElement}
      */
     #optionList = null;
+
+    /**
+     * @type {HTMLDivElement}
+     */
+    #optionListContainer = null;
+
+    /**
+     * @type {SearchProvider}
+     */
+    #searchProvider;
 
     /**
      * @type {boolean}
@@ -42,6 +53,7 @@ export class OptionListProvider {
         this.#fakeSelect = fakeSelect;
         this.#clickCallback = clickCallback;
         this.#observer = observer;
+        this.#searchProvider = new SearchProvider(options);
     }
 
     /**
@@ -59,59 +71,104 @@ export class OptionListProvider {
     }
 
     /**
+     * @returns {HTMLInputElement|null}
+     */
+    get searchInput() {
+        return this.#searchProvider.searchInput;
+    }
+
+    /**
      * @returns {boolean}
      */
     get visible() {
         return this.#visible;
     }
 
-    createOptionList() {
+    #createOptionList() {
+        this.#optionListContainer = document.createElement('div');
+        this.#optionListContainer.classList.add(this.options.classes.optionList);
+        this.#optionListContainer.style.display = 'none';
+        this.#optionListContainer.ariaExpanded = 'false';
+        this.#optionListContainer.dataset.id = this.options.el.id;
+        this.#optionListContainer.addEventListener('click', this.#clickCallback);
+        this.#optionListContainer.addEventListener('mousedown', this.#preventFocusLossOnOptionClick);
+
         this.#optionList = document.createElement('div');
+        this.#optionList.setAttribute('role', 'listbox');
 
-        Object.assign(this.#optionList, {
-            role: 'listbox',
-            classList: [this.options.classes.optionList],
-            ariaExpanded: 'false',
-            style: { display: 'none' },
-        });
+        this.#optionListContainer.append(this.#optionList);
+        this.#searchProvider.createSearchElements(this.#optionListContainer, this.#optionList);
 
-        this.#optionList.addEventListener('click', this.#clickCallback);
-        this.#optionList.dataset.id = this.options.el.id;
         this.#optionListCreated = true;
-
-        this.options.optionList.appendTo.append(this.#optionList);
+        this.options.optionList.appendTo.append(this.#optionListContainer);
     }
 
     syncOptions() {
         this.#optionList.innerHTML = '';
 
-        this.options.el.querySelectorAll('option').forEach((option) => {
-            const optionEl = document.createElement('div');
-            let ariaSelected = 'false';
-
-            if (option.selected) {
-                ariaSelected = 'true';
+        Array.from(this.options.el.children).forEach((child) => {
+            if (child.tagName === 'OPTGROUP') {
+                this.#optionList.append(this.#createOptGroupElement(child));
+            } else if (child.tagName === 'OPTION') {
+                this.#optionList.append(this.#createOptionElement(child));
             }
-
-            Object.assign(optionEl, {
-                role: 'option',
-                textContent: option.text,
-                ariaSelected
-            });
-
-            optionEl.dataset.value = option.value;
-
-            if (option.disabled) {
-                optionEl.classList.add(this.options.classes.disabled);
-            }
-
-            this.#optionList.append(optionEl);
         });
+
+        this.#searchProvider.applyFilter();
     }
 
-    show() {
+    /**
+     * @param {HTMLOptGroupElement} optgroup
+     * @returns {HTMLDivElement}
+     */
+    #createOptGroupElement(optgroup) {
+        const optgroupEl = document.createElement('div');
+
+        optgroupEl.classList.add(this.options.classes.optgroup);
+        optgroupEl.classList.toggle(this.options.classes.disabled, optgroup.disabled);
+        optgroupEl.setAttribute('role', 'group');
+        optgroupEl.setAttribute('aria-label', optgroup.label);
+
+        const labelEl = document.createElement('div');
+
+        labelEl.classList.add('label');
+        labelEl.classList.toggle(this.options.classes.disabled, optgroup.disabled);
+        labelEl.textContent = optgroup.label;
+        labelEl.dataset.optgroupLabel = 'true';
+
+        optgroupEl.append(labelEl);
+
+        optgroup.querySelectorAll('option').forEach((option) => {
+            optgroupEl.append(this.#createOptionElement(option, optgroup.disabled));
+        });
+
+        return optgroupEl;
+    }
+
+    /**
+     * @param {HTMLOptionElement} option
+     * @param {boolean} [parentDisabled]
+     * @returns {HTMLDivElement}
+     */
+    #createOptionElement(option, parentDisabled = false) {
+        const optionEl = document.createElement('div');
+
+        optionEl.textContent = option.text;
+        optionEl.setAttribute('role', 'option');
+        optionEl.setAttribute('aria-selected', option.selected ? 'true' : 'false');
+        optionEl.dataset.value = option.value;
+        optionEl.dataset.index = String(option.index);
+        optionEl.classList.toggle(this.options.classes.disabled, option.disabled || parentDisabled);
+
+        return optionEl;
+    }
+
+    /**
+     * @param {boolean} [focusSearch]
+     */
+    show(focusSearch = false) {
         if (this.optionListCreated === false) {
-            this.createOptionList();
+            this.#createOptionList();
             this.syncOptions();
             this.#observer.observe(this.options.el, {
                 attributes: true,
@@ -121,17 +178,49 @@ export class OptionListProvider {
         }
 
         this.updatePosition();
-        this.#optionList.style.display = 'block';
-        this.#optionList.ariaExpanded = 'true';
+        this.#optionListContainer.style.display = 'block';
+        this.#optionListContainer.ariaExpanded = 'true';
         this.#visible = true;
 
         document.addEventListener('click', this.#handleOutsideClick);
         window.addEventListener('resize', this.#handleResize);
+
+        if (focusSearch === true && this.#searchProvider.searchInput !== null) {
+            this.#searchProvider.searchInput.focus();
+        }
+    }
+
+    /**
+     * @param {boolean} [extend]
+     */
+    selectNextVisibleOption(extend = false) {
+        const visibleOptions = this.#getVisibleEnabledOptionElements();
+        const nextOption = visibleOptions[visibleOptions.indexOf(this.#getLastSelectedVisibleOption()) + 1];
+
+        if (nextOption === undefined) {
+            return;
+        }
+
+        this.#setSelectedOptionByElement(nextOption, extend);
+    }
+
+    /**
+     * @param {boolean} [extend]
+     */
+    selectPreviousVisibleOption(extend = false) {
+        const visibleOptions = this.#getVisibleEnabledOptionElements();
+        const currentIndex = visibleOptions.indexOf(this.#getFirstSelectedVisibleOption());
+
+        if (currentIndex <= 0) {
+            return;
+        }
+
+        this.#setSelectedOptionByElement(visibleOptions[currentIndex - 1], extend);
     }
 
     hide() {
-        this.#optionList.style.display = 'none';
-        this.#optionList.ariaExpanded = 'false';
+        this.#optionListContainer.style.display = 'none';
+        this.#optionListContainer.ariaExpanded = 'false';
         this.#visible = false;
 
         document.removeEventListener('click', this.#handleOutsideClick);
@@ -141,14 +230,79 @@ export class OptionListProvider {
     updatePosition() {
         const { top, left, width } = this.#getPositions();
 
-        Object.assign(this.#optionList.style, {
+        Object.assign(this.#optionListContainer.style, {
             top,
             left
         });
 
         if (this.options.optionList.calcWidth === true) {
-            this.#optionList.style.width = width;
+            this.#optionListContainer.style.width = width;
         }
+    }
+
+    resetFilter() {
+        this.#searchProvider.reset();
+        this.#searchProvider.applyFilter();
+    }
+
+    /**
+     * @param {HTMLElement} fakeOptionEl
+     * @returns {HTMLOptionElement|null}
+     */
+    resolveRealOption(fakeOptionEl) {
+        const optionIndex = Number(fakeOptionEl.dataset.index);
+
+        if (Number.isNaN(optionIndex)) {
+            return null;
+        }
+
+        return this.options.el.querySelectorAll('option')[optionIndex] ?? null;
+    }
+
+    /**
+     * @returns {HTMLDivElement[]}
+     */
+    #getVisibleEnabledOptionElements() {
+        return Array.from(this.#optionList.querySelectorAll('[role="option"]:not([hidden])')).filter((optionEl) => {
+            return optionEl.classList.contains(this.options.classes.disabled) === false;
+        });
+    }
+
+    /**
+     * @returns {HTMLDivElement|null}
+     */
+    #getFirstSelectedVisibleOption() {
+        return this.#optionList.querySelector('[role="option"][aria-selected="true"]:not([hidden])');
+    }
+
+    /**
+     * @returns {HTMLDivElement|null}
+     */
+    #getLastSelectedVisibleOption() {
+        const selected = this.#optionList.querySelectorAll('[role="option"][aria-selected="true"]:not([hidden])');
+
+        return selected[selected.length - 1] ?? null;
+    }
+
+    /**
+     * @param {HTMLDivElement} optionEl
+     * @param {boolean} [extend]
+     */
+    #setSelectedOptionByElement(optionEl, extend = false) {
+        const realOption = this.resolveRealOption(optionEl);
+
+        if (realOption === null || realOption.disabled) {
+            return;
+        }
+
+        if (this.options.el.multiple && extend) {
+            realOption.selected = true;
+        } else {
+            this.options.el.selectedIndex = realOption.index;
+        }
+
+        this.options.el.dispatchEvent(new Event('change', { bubbles: true }));
+        optionEl.scrollIntoView({ block: 'nearest' });
     }
 
     /**
@@ -184,4 +338,13 @@ export class OptionListProvider {
     #handleResize = ReduceFunctionCalls.throttle(() => {
         this.updatePosition();
     });
+
+    /**
+     * @param {MouseEvent} event
+     */
+    #preventFocusLossOnOptionClick = (event) => {
+        if (event.target.closest('[data-value]') !== null) {
+            event.preventDefault();
+        }
+    };
 }

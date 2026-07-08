@@ -82,17 +82,20 @@ new SelectReplace({...}).init();
 <details>
 <summary>List of available constructor parameters</summary>
 
-| Option               | Type        | Default                                                                                                                                                                                                                                | Description                                                                         |
-|----------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| el                   | HTMLElement | `document.querySelector('select')`                                                                                                                                                                                                     | Container to which the library should be bound                                      |
-| optionList           | object      |                                                                                                                                                                                                                                        | Configuration options especially for the option list                                |
-| optionList.calcWidth | boolean     | `true`                                                                                                                                                                                                                                 | Make option list the same width as select field                                     |
-| optionList.appendTo  | HTMLElement | `document.body`                                                                                                                                                                                                                        | Container in which the option list get appended                                     |
-| classes              | object      | <pre>{<br>&nbsp;&nbsp;fakeSelect: 'select-replace',<br>&nbsp;&nbsp;placeholder: 'placeholder',<br>&nbsp;&nbsp;optionList: 'option-list',<br>&nbsp;&nbsp;hideSelect: 'visually-hidden',<br>&nbsp;&nbsp;focussed: 'has-focus'<br>}</pre> | Selectors that are used internally or states that will be added to elements         |
-| i18n                 | object      |                                                                                                                                                                                                                                        | Internationalization settings                                                       |
-| i18n.languages       | array       | `['en', 'de']`                                                                                                                                                                                                                         | Available translations (extend this array, if you provide more)                     |
-| i18n.selectedOptions | object      | <pre>{<br>&nbsp;&nbsp;en: 'selected',<br>&nbsp;&nbsp;de: 'ausgewählt'<br>}</pre>                                                                                                                                                       | Translations for n selected                                                         |
-| i18n.use             | string      | `en`                                                                                                                                                                                                                                   | Fallback language to use, if document language is not available in `i18n.languages` |
+| Option                  | Type        | Default                                                                                                                                                                                                                                                                                                                                  | Description                                                                         |
+|-------------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| el                      | HTMLElement | `document.querySelector('select')`                                                                                                                                                                                                                                                                                                       | Container to which the library should be bound                                      |
+| optionList              | object      |                                                                                                                                                                                                                                                                                                                                          | Configuration options especially for the option list                                |
+| optionList.calcWidth    | boolean     | `true`                                                                                                                                                                                                                                                                                                                                   | Make option list the same width as select field                                     |
+| optionList.appendTo     | HTMLElement | `document.body`                                                                                                                                                                                                                                                                                                                          | Container in which the option list get appended                                     |
+| classes                 | object      | <pre>{<br>&nbsp;&nbsp;fakeSelect: 'select-replace',<br>&nbsp;&nbsp;placeholder: 'placeholder',<br>&nbsp;&nbsp;optionList: 'option-list',<br>&nbsp;&nbsp;searchInput: 'option-list-search',<br>&nbsp;&nbsp;noResults: 'option-list-empty',<br>&nbsp;&nbsp;hideSelect: 'visually-hidden',<br>&nbsp;&nbsp;focussed: 'has-focus',<br>&nbsp;&nbsp;disabled: 'disabled',<br>&nbsp;&nbsp;optgroup: 'option-list-group'<br>}</pre> | Selectors that are used internally or states that will be added to elements         |
+| search                  | boolean     | `false`                                                                                                                                                                                                                                                                                                                                  | Enables a search input above the option list for filtering visible options           |
+| i18n                    | object      |                                                                                                                                                                                                                                                                                                                                          | Internationalization settings                                                       |
+| i18n.languages          | array       | `['en', 'de']`                                                                                                                                                                                                                                                                                                                           | Available translations (extend this array, if you provide more)                     |
+| i18n.selectedOptions    | object      | <pre>{<br>&nbsp;&nbsp;en: 'selected',<br>&nbsp;&nbsp;de: 'ausgewählt'<br>}</pre>                                                                                                                                                                                                                                                         | Translations for n selected                                                         |
+| i18n.search.placeholder | string/object | <pre>{<br>&nbsp;&nbsp;en: 'Search options',<br>&nbsp;&nbsp;de: 'Optionen suchen'<br>}</pre>                                                                                                                                                                                                                                              | Placeholder text for the search field (string or per language map)                   |
+| i18n.search.noResults   | string/object | <pre>{<br>&nbsp;&nbsp;en: 'No results found',<br>&nbsp;&nbsp;de: 'Keine Ergebnisse gefunden'<br>}</pre>                                                                                                                                                                                                                                  | Text shown if no option matches the entered search                                   |
+| i18n.use                | string      | `en`                                                                                                                                                                                                                                                                                                                                     | Fallback language to use, if document language is not available in `i18n.languages` |
 
 </details>
 
@@ -126,15 +129,43 @@ not have any parameters yet.
 </details>
 
 
+## Features
+
+### Search
+
+Pass `search: true` to enable a filter input above the option list. The input placeholder 
+and the "no results" text can be customized per language via the `i18n.search` settings. Both single select
+and multiple select fields can be searched.
+
+```js
+new SelectReplace({
+    el: document.querySelector('select'),
+    search: true
+}).init();
+```
+
+Keyboard interaction inside the search input: `ArrowUp` / `ArrowDown` move the highlight, `Enter` confirms
+and tabs out of the dropdown, `Escape` closes it, and `Tab` / `Shift+Tab` advance focus to the next /
+previous form field.
+
+### Optgroups
+
+Native `<optgroup>` is rendered in the fake option list with the group's `label` as a non-interactive
+heading. Groups with the `disabled` attribute (and any options inside them) are rendered as disabled and
+skipped during keyboard navigation. Disabling individual `<option>` elements works the same way.
+
 ## Demos
 
 Checkout this repository and use the [/demos](/demos) folder as document root to see a running demo in the browser.
 
 - [Single select](/demos/single-select.html)
+- [Single select with search](/demos/single-select-with-search.html)
 - [Multiple select](/demos/multiple-select.html)
 - [Multiple select fields](/demos/multiple-select-fields.html)
+- [Optgroup select](/demos/optgroup-select.html)
 - [Preselected options](/demos/preselected-options.html)
 - [Disabled select and options](/demos/disabled-select-and-options.html)
 - [Programmatic control](/demos/programmatic-control.html)
 - [Form reset](/demos/form-reset.html)
 - [Option list appended to custom container](/demos/option-list-appended-to-custom-container.html)
+- [Form with select events](/demos/form-with-select-events.html)
