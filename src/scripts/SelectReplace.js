@@ -25,6 +25,11 @@ export class SelectReplace extends Base {
     #observer;
 
     /**
+     * @type {KeyboardController}
+     */
+    #keyboardController;
+
+    /**
      * @param {object} options
      * @param {HTMLSelectElement} [options.el]
      */
@@ -100,12 +105,36 @@ export class SelectReplace extends Base {
             this.#observer
         );
 
-        new KeyboardController(
+        this.#keyboardController = new KeyboardController(
             this.options,
             this.#fakeSelect,
             this.#optionListProvider,
             this.#handleRealSelectChange
         );
+    }
+
+    /**
+     * @fires SelectReplace#beforeDestroy
+     * @fires SelectReplace#afterDestroy
+     */
+    destroy() {
+        /**
+         * @event SelectReplace#beforeDestroy
+         */
+        this.emitEvent('beforeDestroy');
+
+        this.offAll();
+        this.#observer?.disconnect();
+        this.#optionListProvider?.destroy();
+        this.#keyboardController?.destroy();
+
+        this.#fakeSelect.remove();
+        this.options.el.classList.remove(this.options.classes.hideSelect);
+
+        /**
+         * @event SelectReplace#afterDestroy
+         */
+        this.emitEvent('afterDestroy');
     }
 
     update = () => {
@@ -160,7 +189,7 @@ export class SelectReplace extends Base {
     #replaceSelect() {
         this.#fakeSelect = document.createElement('div');
         this.#fakeSelect.classList.add(this.options.classes.fakeSelect);
-        this.#fakeSelect.addEventListener('click', this.#handleFakeSelectClick);
+        this.on(this.#fakeSelect, 'click', this.#handleFakeSelectClick);
 
         if (this.isDisabled) {
             this.#fakeSelect.classList.add(this.options.classes.disabled);
@@ -276,7 +305,7 @@ export class SelectReplace extends Base {
             return;
         }
 
-        form.addEventListener('reset', () => {
+        this.on(form, 'reset', () => {
             window.setTimeout(this.update, 0);
         });
     }

@@ -245,6 +245,13 @@ export class OptionListProvider {
         this.#searchProvider.applyFilter();
     }
 
+    destroy() {
+        document.removeEventListener('click', this.#handleOutsideClick);
+        window.removeEventListener('resize', this.#handleResize);
+
+        this.#optionListContainer?.remove();
+    }
+
     /**
      * @param {HTMLElement} fakeOptionEl
      * @returns {HTMLOptionElement|null}

@@ -20,6 +20,11 @@ export class KeyboardController {
     #searchTabAnchorAfter = null;
 
     /**
+     * @type {Function}
+     */
+    #handleRealSelectChange;
+
+    /**
      * @param {object} options
      * @param {HTMLDivElement} fakeSelect
      * @param {object} optionListProvider
@@ -29,13 +34,29 @@ export class KeyboardController {
         this.options = options;
         this.#fakeSelect = fakeSelect;
         this.#optionListProvider = optionListProvider;
+        this.#handleRealSelectChange = handleRealSelectChange;
 
         this.options.el.addEventListener('focusin', this.#onFocusIn);
         this.options.el.addEventListener('focusout', this.#onFocusOut);
-        this.options.el.addEventListener('change', handleRealSelectChange);
+        this.options.el.addEventListener('change', this.#handleRealSelectChange);
         this.options.el.addEventListener('keydown', this.#onSelectKeydown);
 
         this.#addSearchTabAnchors();
+    }
+
+    destroy() {
+        this.options.el.removeEventListener('focusin', this.#onFocusIn);
+        this.options.el.removeEventListener('focusout', this.#onFocusOut);
+        this.options.el.removeEventListener('change', this.#handleRealSelectChange);
+        this.options.el.removeEventListener('keydown', this.#onSelectKeydown);
+
+        const searchInput = this.#optionListProvider.searchInput;
+
+        searchInput?.removeEventListener('keydown', this.#onSearchKeydown);
+        searchInput?.removeEventListener('focusout', this.#onSearchFocusOut);
+
+        this.#searchTabAnchorBefore?.remove();
+        this.#searchTabAnchorAfter?.remove();
     }
 
     #selectKeyHandlers = {
