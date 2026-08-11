@@ -51,23 +51,10 @@ export class SelectReplace extends Base {
                 focussed: 'has-focus',
                 disabled: 'disabled'
             },
-            i18n: {
-                languages: ['en', 'de'],
-                selectedOptions: {
-                    en: 'selected',
-                    de: 'ausgewählt'
-                },
-                search: {
-                    placeholder: {
-                        en: 'Search options',
-                        de: 'Optionen suchen'
-                    },
-                    noResults: {
-                        en: 'No results found',
-                        de: 'Keine Ergebnisse gefunden'
-                    }
-                },
-                use: 'en'
+            labels: {
+                selectedOptions: 'selected',
+                searchPlaceholder: 'Search options',
+                searchNoResults: 'No results found'
             },
             search: false
         }, options);
@@ -75,8 +62,6 @@ export class SelectReplace extends Base {
         if (this.isMultiple && typeof this.options.el.dataset.placeholder === 'undefined') {
             console.error(`Select with id="${this.options.el.id}" is missing data-placeholder`);
         }
-
-        this.#setLanguageToUse();
     }
 
     init() {
@@ -178,12 +163,6 @@ export class SelectReplace extends Base {
      */
     get isDisabled() {
         return this.options.el.disabled;
-    }
-
-    #setLanguageToUse() {
-        if (this.options.i18n.languages.includes(document.documentElement.lang)) {
-            this.options.i18n.use = document.documentElement.lang;
-        }
     }
 
     #replaceSelect() {

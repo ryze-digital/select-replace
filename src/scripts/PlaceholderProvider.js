@@ -54,7 +54,7 @@ export class PlaceholderProvider {
      */
     refreshSelectedCount(selectedCount) {
         if (selectedCount > 0) {
-            this.placeholder = `${selectedCount} ${this.options.i18n.selectedOptions[this.options.i18n.use]}`;
+            this.placeholder = `${selectedCount} ${this.options.labels.selectedOptions}`;
         } else {
             this.placeholder = this.options.el.dataset.placeholder;
         }

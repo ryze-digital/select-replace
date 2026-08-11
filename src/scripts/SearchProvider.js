@@ -64,8 +64,8 @@ export class SearchProvider {
 
         Object.assign(this.#searchInput, {
             type: 'search',
-            placeholder: this.#getLocalizedText('placeholder', 'Search options'),
-            ariaLabel: this.#getLocalizedText('placeholder', 'Search options')
+            placeholder: this.options.labels.searchPlaceholder,
+            ariaLabel: this.options.labels.searchPlaceholder
         });
         this.#searchInput.classList.add(this.options.classes.searchInput);
 
@@ -87,7 +87,7 @@ export class SearchProvider {
         this.#noResults = document.createElement('div');
 
         Object.assign(this.#noResults, {
-            textContent: this.#getLocalizedText('noResults', 'No results found'),
+            textContent: this.options.labels.searchNoResults,
             hidden: true,
             ariaHidden: 'true'
         });
@@ -152,31 +152,6 @@ export class SearchProvider {
         }
 
         this.#setElementVisibility(this.#noResults, visible);
-    }
-
-    /**
-     * @param {string} key
-     * @param {string} fallbackValue
-     * @returns {string}
-     */
-    #getLocalizedText(key, fallbackValue) {
-        const textConfig = this.options.i18n.search[key];
-
-        if (typeof textConfig === 'string') {
-            return textConfig;
-        }
-
-        if (Object.prototype.toString.call(textConfig) === '[object Object]') {
-            if (typeof textConfig[this.options.i18n.use] === 'string') {
-                return textConfig[this.options.i18n.use];
-            }
-
-            if (typeof textConfig.en === 'string') {
-                return textConfig.en;
-            }
-        }
-
-        return fallbackValue;
     }
 }
 
