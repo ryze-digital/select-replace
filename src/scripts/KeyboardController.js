@@ -71,6 +71,9 @@ export class KeyboardController {
         Escape: () => {
             this.#removeMirroredFocusState();
         },
+        Space: (event) => {
+            event.preventDefault();
+        },
         Enter: (event) => {
             event.preventDefault();
             this.#removeMirroredFocusState();
@@ -158,7 +161,9 @@ export class KeyboardController {
      * @param {KeyboardEvent} event
      */
     #onSelectKeydown = (event) => {
-        this.#selectKeyHandlers[event.key]?.(event);
+        const key = event.key === ' ' ? 'Space' : event.key;
+
+        this.#selectKeyHandlers[key]?.(event);
     };
 
     /**
