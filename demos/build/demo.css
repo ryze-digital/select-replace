@@ -90,6 +90,9 @@ select.visually-hidden {
   white-space: nowrap;
   width: 1px;
 }
+select:user-invalid + .select-replace {
+  border-color: red;
+}
 
 .select-replace {
   cursor: pointer;
