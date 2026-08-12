@@ -16,7 +16,7 @@
             </div>
             <div>
                 <label for="select-replace">Single Select</label>
-                <select id="select-replace">
+                <select id="select-replace" required>
                     <option value="">Please select …</option>
                     <option value="option-1">Option 1</option>
                     <option value="option-2">Option 2</option>
@@ -38,7 +38,7 @@
             </div>
             <div>
                 <label for="select-replace-3">Multiple Select</label>
-                <select id="select-replace-3" multiple data-placeholder="Please select …" data-search="true">
+                <select id="select-replace-3" multiple data-placeholder="Please select …" data-search="true" required>
                     <option value="option-1">Option 1</option>
                     <option value="option-2">Option 2</option>
                     <option value="option-3">Option 3</option>
@@ -60,6 +60,9 @@
             <div>
                 <label for="textarea-field">Textarea Field:</label>
                 <textarea name="textarea-field" id="textarea-field" cols="30" rows="5"></textarea>
+            </div>
+            <div>
+                <input type="submit" value="Submit" />
             </div>
         </div>
     </form>

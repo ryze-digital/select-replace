@@ -60,6 +60,13 @@ select {
     &.visually-hidden {
         @include scss-utilities.visually-hidden();
     }
+    &:user-invalid {
+        + .select-replace {
+            border: {
+                color: red;
+            }
+        }
+    }
 }
 
 .select-replace {
