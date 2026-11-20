@@ -32,7 +32,7 @@ export class SearchProvider {
      * @returns {string}
      */
     get searchTerm() {
-        return this.#searchInput?.value?.trim().toLowerCase() ?? '';
+        return this.#searchInput?.value?.trim().toLowerCase() ?? "";
     }
 
     /**
@@ -60,18 +60,18 @@ export class SearchProvider {
      * @param {HTMLDivElement} container
      */
     #createSearchInput(container) {
-        this.#searchInput = document.createElement('input');
+        this.#searchInput = document.createElement("input");
 
         Object.assign(this.#searchInput, {
-            type: 'search',
+            type: "search",
             placeholder: this.options.labels.searchPlaceholder,
-            ariaLabel: this.options.labels.searchPlaceholder
+            ariaLabel: this.options.labels.searchPlaceholder,
         });
         this.#searchInput.classList.add(this.options.classes.searchInput);
 
-        this.#searchInput.autocomplete = 'off';
+        this.#searchInput.autocomplete = "off";
         this.#searchInput.spellcheck = false;
-        this.#searchInput.addEventListener('input', this.#onInput);
+        this.#searchInput.addEventListener("input", this.#onInput);
 
         container.prepend(this.#searchInput);
     }
@@ -84,12 +84,12 @@ export class SearchProvider {
      * @param {HTMLDivElement} container
      */
     #createNoResultsElement(container) {
-        this.#noResults = document.createElement('div');
+        this.#noResults = document.createElement("div");
 
         Object.assign(this.#noResults, {
             textContent: this.options.labels.searchNoResults,
             hidden: true,
-            ariaHidden: 'true'
+            ariaHidden: "true",
         });
         this.#noResults.classList.add(this.options.classes.noResults);
 
@@ -130,7 +130,7 @@ export class SearchProvider {
 
     reset() {
         if (this.#searchInput !== null) {
-            this.#searchInput.value = '';
+            this.#searchInput.value = "";
         }
     }
 
@@ -140,7 +140,7 @@ export class SearchProvider {
      */
     #setElementVisibility(el, visible) {
         el.hidden = !visible;
-        el.ariaHidden = visible ? 'false' : 'true';
+        el.ariaHidden = visible ? "false" : "true";
     }
 
     /**
@@ -154,4 +154,3 @@ export class SearchProvider {
         this.#setElementVisibility(this.#noResults, visible);
     }
 }
-

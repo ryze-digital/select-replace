@@ -1,5 +1,5 @@
-import { ReduceFunctionCalls } from '@ryze-digital/js-utilities';
-import { SearchProvider } from './SearchProvider.js';
+import { ReduceFunctionCalls } from "@ryze-digital/js-utilities";
+import { SearchProvider } from "./SearchProvider.js";
 
 export class OptionListProvider {
     /**
@@ -85,16 +85,16 @@ export class OptionListProvider {
     }
 
     #createOptionList() {
-        this.#optionListContainer = document.createElement('div');
+        this.#optionListContainer = document.createElement("div");
         this.#optionListContainer.classList.add(this.options.classes.optionList);
-        this.#optionListContainer.style.display = 'none';
-        this.#optionListContainer.ariaExpanded = 'false';
+        this.#optionListContainer.style.display = "none";
+        this.#optionListContainer.ariaExpanded = "false";
         this.#optionListContainer.dataset.id = this.options.el.id;
-        this.#optionListContainer.addEventListener('click', this.#clickCallback);
-        this.#optionListContainer.addEventListener('mousedown', this.#preventFocusLossOnOptionClick);
+        this.#optionListContainer.addEventListener("click", this.#clickCallback);
+        this.#optionListContainer.addEventListener("mousedown", this.#preventFocusLossOnOptionClick);
 
-        this.#optionList = document.createElement('div');
-        this.#optionList.setAttribute('role', 'listbox');
+        this.#optionList = document.createElement("div");
+        this.#optionList.setAttribute("role", "listbox");
 
         this.#optionListContainer.append(this.#optionList);
         this.#searchProvider.createSearchElements(this.#optionListContainer, this.#optionList);
@@ -104,12 +104,12 @@ export class OptionListProvider {
     }
 
     syncOptions() {
-        this.#optionList.innerHTML = '';
+        this.#optionList.innerHTML = "";
 
         Array.from(this.options.el.children).forEach((child) => {
-            if (child.tagName === 'OPTGROUP') {
+            if (child.tagName === "OPTGROUP") {
                 this.#optionList.append(this.#createOptGroupElement(child));
-            } else if (child.tagName === 'OPTION') {
+            } else if (child.tagName === "OPTION") {
                 this.#optionList.append(this.#createOptionElement(child));
             }
         });
@@ -122,23 +122,23 @@ export class OptionListProvider {
      * @returns {HTMLDivElement}
      */
     #createOptGroupElement(optgroup) {
-        const optgroupEl = document.createElement('div');
+        const optgroupEl = document.createElement("div");
 
         optgroupEl.classList.add(this.options.classes.optgroup);
         optgroupEl.classList.toggle(this.options.classes.disabled, optgroup.disabled);
-        optgroupEl.setAttribute('role', 'group');
-        optgroupEl.setAttribute('aria-label', optgroup.label);
+        optgroupEl.setAttribute("role", "group");
+        optgroupEl.setAttribute("aria-label", optgroup.label);
 
-        const labelEl = document.createElement('div');
+        const labelEl = document.createElement("div");
 
-        labelEl.classList.add('label');
+        labelEl.classList.add("label");
         labelEl.classList.toggle(this.options.classes.disabled, optgroup.disabled);
         labelEl.textContent = optgroup.label;
-        labelEl.dataset.optgroupLabel = 'true';
+        labelEl.dataset.optgroupLabel = "true";
 
         optgroupEl.append(labelEl);
 
-        optgroup.querySelectorAll('option').forEach((option) => {
+        optgroup.querySelectorAll("option").forEach((option) => {
             optgroupEl.append(this.#createOptionElement(option, optgroup.disabled));
         });
 
@@ -151,11 +151,11 @@ export class OptionListProvider {
      * @returns {HTMLDivElement}
      */
     #createOptionElement(option, parentDisabled = false) {
-        const optionEl = document.createElement('div');
+        const optionEl = document.createElement("div");
 
         optionEl.textContent = option.text;
-        optionEl.setAttribute('role', 'option');
-        optionEl.setAttribute('aria-selected', option.selected ? 'true' : 'false');
+        optionEl.setAttribute("role", "option");
+        optionEl.setAttribute("aria-selected", option.selected ? "true" : "false");
         optionEl.dataset.value = option.value;
         optionEl.dataset.index = String(option.index);
         optionEl.classList.toggle(this.options.classes.disabled, option.disabled || parentDisabled);
@@ -173,17 +173,17 @@ export class OptionListProvider {
             this.#observer.observe(this.options.el, {
                 attributes: true,
                 childList: true,
-                subtree: true
+                subtree: true,
             });
         }
 
         this.updatePosition();
-        this.#optionListContainer.style.display = 'block';
-        this.#optionListContainer.ariaExpanded = 'true';
+        this.#optionListContainer.style.display = "block";
+        this.#optionListContainer.ariaExpanded = "true";
         this.#visible = true;
 
-        document.addEventListener('click', this.#handleOutsideClick);
-        window.addEventListener('resize', this.#handleResize);
+        document.addEventListener("click", this.#handleOutsideClick);
+        window.addEventListener("resize", this.#handleResize);
 
         if (focusSearch === true && this.#searchProvider.searchInput !== null) {
             this.#searchProvider.searchInput.focus();
@@ -219,12 +219,12 @@ export class OptionListProvider {
     }
 
     hide() {
-        this.#optionListContainer.style.display = 'none';
-        this.#optionListContainer.ariaExpanded = 'false';
+        this.#optionListContainer.style.display = "none";
+        this.#optionListContainer.ariaExpanded = "false";
         this.#visible = false;
 
-        document.removeEventListener('click', this.#handleOutsideClick);
-        window.removeEventListener('resize', this.#handleResize);
+        document.removeEventListener("click", this.#handleOutsideClick);
+        window.removeEventListener("resize", this.#handleResize);
     }
 
     updatePosition() {
@@ -232,7 +232,7 @@ export class OptionListProvider {
 
         Object.assign(this.#optionListContainer.style, {
             top,
-            left
+            left,
         });
 
         if (this.options.optionList.calcWidth === true) {
@@ -246,8 +246,8 @@ export class OptionListProvider {
     }
 
     destroy() {
-        document.removeEventListener('click', this.#handleOutsideClick);
-        window.removeEventListener('resize', this.#handleResize);
+        document.removeEventListener("click", this.#handleOutsideClick);
+        window.removeEventListener("resize", this.#handleResize);
 
         this.#optionListContainer?.remove();
     }
@@ -263,7 +263,7 @@ export class OptionListProvider {
             return null;
         }
 
-        return this.options.el.querySelectorAll('option')[optionIndex] ?? null;
+        return this.options.el.querySelectorAll("option")[optionIndex] ?? null;
     }
 
     /**
@@ -308,8 +308,8 @@ export class OptionListProvider {
             this.options.el.selectedIndex = realOption.index;
         }
 
-        this.options.el.dispatchEvent(new Event('change', { bubbles: true }));
-        optionEl.scrollIntoView({ block: 'nearest' });
+        this.options.el.dispatchEvent(new Event("change", { bubbles: true }));
+        optionEl.scrollIntoView({ block: "nearest" });
     }
 
     /**
@@ -325,7 +325,7 @@ export class OptionListProvider {
         return {
             top: `${top}px`,
             left: `${left}px`,
-            width: `${fakeSelectRect.width}px`
+            width: `${fakeSelectRect.width}px`,
         };
     }
 
@@ -350,7 +350,7 @@ export class OptionListProvider {
      * @param {MouseEvent} event
      */
     #preventFocusLossOnOptionClick = (event) => {
-        if (event.target.closest('[data-value]') !== null) {
+        if (event.target.closest("[data-value]") !== null) {
             event.preventDefault();
         }
     };
