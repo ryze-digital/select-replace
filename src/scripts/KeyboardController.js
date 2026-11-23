@@ -36,24 +36,24 @@ export class KeyboardController {
         this.#optionListProvider = optionListProvider;
         this.#handleRealSelectChange = handleRealSelectChange;
 
-        this.options.el.addEventListener('focusin', this.#onFocusIn);
-        this.options.el.addEventListener('focusout', this.#onFocusOut);
-        this.options.el.addEventListener('change', this.#handleRealSelectChange);
-        this.options.el.addEventListener('keydown', this.#onSelectKeydown);
+        this.options.el.addEventListener("focusin", this.#onFocusIn);
+        this.options.el.addEventListener("focusout", this.#onFocusOut);
+        this.options.el.addEventListener("change", this.#handleRealSelectChange);
+        this.options.el.addEventListener("keydown", this.#onSelectKeydown);
 
         this.#addSearchTabAnchors();
     }
 
     destroy() {
-        this.options.el.removeEventListener('focusin', this.#onFocusIn);
-        this.options.el.removeEventListener('focusout', this.#onFocusOut);
-        this.options.el.removeEventListener('change', this.#handleRealSelectChange);
-        this.options.el.removeEventListener('keydown', this.#onSelectKeydown);
+        this.options.el.removeEventListener("focusin", this.#onFocusIn);
+        this.options.el.removeEventListener("focusout", this.#onFocusOut);
+        this.options.el.removeEventListener("change", this.#handleRealSelectChange);
+        this.options.el.removeEventListener("keydown", this.#onSelectKeydown);
 
         const searchInput = this.#optionListProvider.searchInput;
 
-        searchInput?.removeEventListener('keydown', this.#onSearchKeydown);
-        searchInput?.removeEventListener('focusout', this.#onSearchFocusOut);
+        searchInput?.removeEventListener("keydown", this.#onSearchKeydown);
+        searchInput?.removeEventListener("focusout", this.#onSearchFocusOut);
 
         this.#searchTabAnchorBefore?.remove();
         this.#searchTabAnchorAfter?.remove();
@@ -91,7 +91,7 @@ export class KeyboardController {
             }
             event.preventDefault();
             this.#stepRealSelection(-1);
-        }
+        },
     };
 
     #searchKeyHandlers = {
@@ -121,7 +121,7 @@ export class KeyboardController {
         Enter: (event) => {
             event.preventDefault();
             this.#searchTabAnchorAfter.focus();
-        }
+        },
     };
 
     /**
@@ -129,11 +129,8 @@ export class KeyboardController {
      */
     #onFocusIn = (event) => {
         if (
-            event.relatedTarget !== null
-            && (
-                event.relatedTarget === this.#searchTabAnchorBefore
-                || event.relatedTarget === this.#searchTabAnchorAfter
-            )
+            event.relatedTarget !== null &&
+            (event.relatedTarget === this.#searchTabAnchorBefore || event.relatedTarget === this.#searchTabAnchorAfter)
         ) {
             return;
         }
@@ -148,8 +145,8 @@ export class KeyboardController {
      */
     #onFocusOut = (event = null) => {
         if (
-            event?.relatedTarget instanceof HTMLElement
-            && event.relatedTarget.closest(`.${this.options.classes.optionList}`) !== null
+            event?.relatedTarget instanceof HTMLElement &&
+            event.relatedTarget.closest(`.${this.options.classes.optionList}`) !== null
         ) {
             return;
         }
@@ -161,7 +158,7 @@ export class KeyboardController {
      * @param {KeyboardEvent} event
      */
     #onSelectKeydown = (event) => {
-        const key = event.key === ' ' ? 'Space' : event.key;
+        const key = event.key === " " ? "Space" : event.key;
 
         this.#selectKeyHandlers[key]?.(event);
     };
@@ -178,8 +175,8 @@ export class KeyboardController {
      */
     #onSearchFocusOut = (event) => {
         if (
-            event.relatedTarget instanceof HTMLElement
-            && event.relatedTarget.closest(`.${this.options.classes.optionList}`) !== null
+            event.relatedTarget instanceof HTMLElement &&
+            event.relatedTarget.closest(`.${this.options.classes.optionList}`) !== null
         ) {
             return;
         }
@@ -203,9 +200,9 @@ export class KeyboardController {
         // option.disabled reflects only the option's own attribute — also skip
         // options whose parent <optgroup> is disabled.
         while (
-            nextIndex >= 0
-            && nextIndex < options.length
-            && (options[nextIndex].disabled || options[nextIndex].closest('optgroup[disabled]') !== null)
+            nextIndex >= 0 &&
+            nextIndex < options.length &&
+            (options[nextIndex].disabled || options[nextIndex].closest("optgroup[disabled]") !== null)
         ) {
             nextIndex += direction;
         }
@@ -215,10 +212,10 @@ export class KeyboardController {
         }
 
         this.options.el.selectedIndex = nextIndex;
-        this.options.el.dispatchEvent(new Event('change', { bubbles: true }));
+        this.options.el.dispatchEvent(new Event("change", { bubbles: true }));
         this.#optionListProvider.optionList
             ?.querySelector(`[data-index="${nextIndex}"]`)
-            ?.scrollIntoView({ block: 'nearest' });
+            ?.scrollIntoView({ block: "nearest" });
     }
 
     #addSearchKeydownListener() {
@@ -228,8 +225,8 @@ export class KeyboardController {
             return;
         }
 
-        searchInput.addEventListener('keydown', this.#onSearchKeydown);
-        searchInput.addEventListener('focusout', this.#onSearchFocusOut);
+        searchInput.addEventListener("keydown", this.#onSearchKeydown);
+        searchInput.addEventListener("focusout", this.#onSearchFocusOut);
     }
 
     /**
@@ -252,10 +249,10 @@ export class KeyboardController {
      * @returns {HTMLSpanElement}
      */
     #createSearchTabAnchor() {
-        const anchor = document.createElement('span');
+        const anchor = document.createElement("span");
 
         anchor.tabIndex = -1;
-        anchor.setAttribute('aria-hidden', 'true');
+        anchor.setAttribute("aria-hidden", "true");
 
         return anchor;
     }

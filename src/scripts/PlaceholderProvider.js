@@ -35,7 +35,7 @@ export class PlaceholderProvider {
     }
 
     createPlaceholder() {
-        this.#placeholder = document.createElement('span');
+        this.#placeholder = document.createElement("span");
 
         this.#placeholder.classList.add(this.options.classes.placeholder);
 
@@ -65,10 +65,10 @@ export class PlaceholderProvider {
      * @returns {string}
      */
     #getInitialPlaceholderText() {
-        let placeholderText = this.options.el.querySelector('option').textContent;
+        let placeholderText = this.options.el.querySelector("option").textContent;
 
         if (this.#initialSelectedCount > 0) {
-            placeholderText = this.options.el.querySelector(':checked').textContent;
+            placeholderText = this.options.el.querySelector(":checked").textContent;
         }
 
         return placeholderText;

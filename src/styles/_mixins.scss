@@ -17,9 +17,7 @@
         origin: content-box;
         size: $size math.div($size, 1.5);
         repeat: no-repeat;
-        position: right
-            ((math.div($padding-inline-end, 2) + math.div($size, 2)) * -1)
-            center;
+        position: right ((math.div($padding-inline-end, 2) + math.div($size, 2)) * -1) center;
     }
     padding: {
         inline: {

@@ -1,7 +1,7 @@
-import { Base } from '@ryze-digital/js-utilities';
-import { OptionListProvider } from './OptionListProvider.js';
-import { PlaceholderProvider } from './PlaceholderProvider.js';
-import { KeyboardController } from './KeyboardController.js';
+import { Base } from "@ryze-digital/js-utilities";
+import { OptionListProvider } from "./OptionListProvider.js";
+import { PlaceholderProvider } from "./PlaceholderProvider.js";
+import { KeyboardController } from "./KeyboardController.js";
 
 export class SelectReplace extends Base {
     /**
@@ -34,32 +34,35 @@ export class SelectReplace extends Base {
      * @param {HTMLSelectElement} [options.el]
      */
     constructor(options = {}) {
-        super({
-            el: document.querySelector('select'),
-            optionList: {
-                calcWidth: true,
-                appendTo: document.body
+        super(
+            {
+                el: document.querySelector("select"),
+                optionList: {
+                    calcWidth: true,
+                    appendTo: document.body,
+                },
+                classes: {
+                    fakeSelect: "select-replace",
+                    placeholder: "placeholder",
+                    optionList: "option-list",
+                    optgroup: "option-list-group",
+                    searchInput: "option-list-search",
+                    noResults: "option-list-empty",
+                    hideSelect: "visually-hidden",
+                    focussed: "has-focus",
+                    disabled: "disabled",
+                },
+                labels: {
+                    selectedOptions: "selected",
+                    searchPlaceholder: "Search options",
+                    searchNoResults: "No results found",
+                },
+                search: false,
             },
-            classes: {
-                fakeSelect: 'select-replace',
-                placeholder: 'placeholder',
-                optionList: 'option-list',
-                optgroup: 'option-list-group',
-                searchInput: 'option-list-search',
-                noResults: 'option-list-empty',
-                hideSelect: 'visually-hidden',
-                focussed: 'has-focus',
-                disabled: 'disabled'
-            },
-            labels: {
-                selectedOptions: 'selected',
-                searchPlaceholder: 'Search options',
-                searchNoResults: 'No results found'
-            },
-            search: false
-        }, options);
+            options,
+        );
 
-        if (this.isMultiple && typeof this.options.el.dataset.placeholder === 'undefined') {
+        if (this.isMultiple && typeof this.options.el.dataset.placeholder === "undefined") {
             console.error(`Select with id="${this.options.el.id}" is missing data-placeholder`);
         }
     }
@@ -67,11 +70,7 @@ export class SelectReplace extends Base {
     init() {
         this.#replaceSelect();
 
-        this.#placeholderProvider = new PlaceholderProvider(
-            this.options,
-            this.#fakeSelect,
-            this.selectedCount
-        );
+        this.#placeholderProvider = new PlaceholderProvider(this.options, this.#fakeSelect, this.selectedCount);
 
         this.#placeholderProvider.createPlaceholder();
 
@@ -87,14 +86,14 @@ export class SelectReplace extends Base {
             this.options,
             this.#fakeSelect,
             this.#handleOptionListClick,
-            this.#observer
+            this.#observer,
         );
 
         this.#keyboardController = new KeyboardController(
             this.options,
             this.#fakeSelect,
             this.#optionListProvider,
-            this.#handleRealSelectChange
+            this.#handleRealSelectChange,
         );
     }
 
@@ -106,7 +105,7 @@ export class SelectReplace extends Base {
         /**
          * @event SelectReplace#beforeDestroy
          */
-        this.emitEvent('beforeDestroy');
+        this.emitEvent("beforeDestroy");
 
         this.offAll();
         this.#observer?.disconnect();
@@ -119,7 +118,7 @@ export class SelectReplace extends Base {
         /**
          * @event SelectReplace#afterDestroy
          */
-        this.emitEvent('afterDestroy');
+        this.emitEvent("afterDestroy");
     }
 
     update = () => {
@@ -132,7 +131,7 @@ export class SelectReplace extends Base {
         if (this.isMultiple) {
             this.#placeholderProvider.refreshSelectedCount(this.selectedCount);
         } else {
-            this.#placeholderProvider.placeholder = this.options.el.querySelector('option:checked')?.textContent ?? '';
+            this.#placeholderProvider.placeholder = this.options.el.querySelector("option:checked")?.textContent ?? "";
         }
     };
 
@@ -148,7 +147,7 @@ export class SelectReplace extends Base {
      * @returns {number}
      */
     get selectedCount() {
-        return this.options.el.querySelectorAll('option:checked').length;
+        return this.options.el.querySelectorAll("option:checked").length;
     }
 
     /**
@@ -166,9 +165,9 @@ export class SelectReplace extends Base {
     }
 
     #replaceSelect() {
-        this.#fakeSelect = document.createElement('div');
+        this.#fakeSelect = document.createElement("div");
         this.#fakeSelect.classList.add(this.options.classes.fakeSelect);
-        this.on(this.#fakeSelect, 'click', this.#handleFakeSelectClick);
+        this.on(this.#fakeSelect, "click", this.#handleFakeSelectClick);
 
         if (this.isDisabled) {
             this.#fakeSelect.classList.add(this.options.classes.disabled);
@@ -201,7 +200,7 @@ export class SelectReplace extends Base {
      * @param {object} event
      */
     #handleOptionListClick = (event) => {
-        const clickedOption = event.target.closest('[data-value]');
+        const clickedOption = event.target.closest("[data-value]");
 
         if (clickedOption === null || clickedOption.classList.contains(this.options.classes.disabled)) {
             return;
@@ -215,9 +214,9 @@ export class SelectReplace extends Base {
 
         if (this.isMultiple === false) {
             this.#setSelectionState(
-                this.options.el.querySelector('option:checked'),
+                this.options.el.querySelector("option:checked"),
                 this.#optionListProvider.optionList.querySelector('[aria-selected="true"]'),
-                false
+                false,
             );
             this.#setSelectionState(realOption, clickedOption, true);
             this.#optionListProvider.resetFilter();
@@ -228,7 +227,7 @@ export class SelectReplace extends Base {
             this.#placeholderProvider.refreshSelectedCount(this.selectedCount);
         }
 
-        this.options.el.dispatchEvent(new Event('change', { bubbles: true }));
+        this.options.el.dispatchEvent(new Event("change", { bubbles: true }));
     };
 
     #handleRealSelectChange = () => {
@@ -238,14 +237,14 @@ export class SelectReplace extends Base {
             return;
         }
 
-        const realOptions = this.options.el.querySelectorAll('option:checked');
+        const realOptions = this.options.el.querySelectorAll("option:checked");
         const fakeOptions = this.#optionListProvider.optionList.querySelectorAll('[aria-selected="true"]');
 
         fakeOptions.forEach((fakeOption) => {
             this.#setSelectionState(null, fakeOption, false);
         });
 
-        this.options.el.querySelectorAll('option').forEach((realOption, optionIndex) => {
+        this.options.el.querySelectorAll("option").forEach((realOption, optionIndex) => {
             if (realOption.selected === false) {
                 return;
             }
@@ -273,18 +272,18 @@ export class SelectReplace extends Base {
         }
 
         if (fakeOption !== null) {
-            fakeOption.setAttribute('aria-selected', selected ? 'true' : 'false');
+            fakeOption.setAttribute("aria-selected", selected ? "true" : "false");
         }
     }
 
     bindFormReset() {
-        const form = this.options.el.closest('form');
+        const form = this.options.el.closest("form");
 
         if (form === null) {
             return;
         }
 
-        this.on(form, 'reset', () => {
+        this.on(form, "reset", () => {
             window.setTimeout(this.update, 0);
         });
     }
